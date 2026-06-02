@@ -1,0 +1,96 @@
+services:
+  ollama:
+    image: ollama/ollama:latest
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    healthcheck:
+      test: ["CMD", "ollama", "list"]
+      interval: 10s
+      timeout: 10s
+      retries: 10
+
+  chromadb:
+    image: chromadb/chroma:${CHROMADB_IMAGE_TAG:-0.5.5}
+    ports:
+      - "8000:8000"
+    environment:
+      CHROMA_SERVER_HOST: 0.0.0.0
+    volumes:
+      - chroma_data:/chroma/chroma
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/v1/heartbeat')",
+        ]
+      interval: 10s
+      timeout: 10s
+      retries: 10
+
+  ingestion:
+    build:
+      context: .
+      dockerfile: services/ingestion/Dockerfile
+    environment:
+      OLLAMA_BASE_URL: ${OLLAMA_BASE_URL}
+      EMBEDDING_MODEL: ${EMBEDDING_MODEL}
+      CHROMA_HOST: ${CHROMA_HOST}
+      CHROMA_PORT: ${CHROMA_PORT}
+      CHROMA_COLLECTION: ${CHROMA_COLLECTION}
+      SOURCE_DIRS: ${SOURCE_DIRS}
+      KNOWLEDGE_BASE_ROOT: ${KNOWLEDGE_BASE_ROOT}
+      MAX_CHUNK_TOKENS: ${MAX_CHUNK_TOKENS}
+      MIN_CHUNK_TOKENS: ${MIN_CHUNK_TOKENS}
+    volumes:
+      - ./knowledge_base:/app/knowledge_base:ro
+    depends_on:
+      ollama:
+        condition: service_healthy
+      chromadb:
+        condition: service_healthy
+
+  api:
+    build:
+      context: .
+      dockerfile: services/api/Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      OLLAMA_BASE_URL: ${OLLAMA_BASE_URL}
+      LLM_MODEL: ${LLM_MODEL}
+      EMBEDDING_MODEL: ${EMBEDDING_MODEL}
+      CHROMA_HOST: ${CHROMA_HOST}
+      CHROMA_PORT: ${CHROMA_PORT}
+      CHROMA_COLLECTION: ${CHROMA_COLLECTION}
+      DEFAULT_K: ${DEFAULT_K}
+      MIN_RELEVANCE_SCORE: ${MIN_RELEVANCE_SCORE}
+      MAX_ANSWER_TOKENS: ${MAX_ANSWER_TOKENS}
+      ANSWER_TIMEOUT_SECONDS: ${ANSWER_TIMEOUT_SECONDS}
+      API_HOST: ${API_HOST}
+      API_PORT: ${API_PORT}
+      LOG_LEVEL: ${LOG_LEVEL}
+    depends_on:
+      ollama:
+        condition: service_healthy
+      chromadb:
+        condition: service_healthy
+
+  ui:
+    build:
+      context: .
+      dockerfile: services/ui/Dockerfile
+    ports:
+      - "8501:8501"
+    environment:
+      API_BASE_URL: ${API_BASE_URL}
+    depends_on:
+      api:
+        condition: service_started
+
+volumes:
+  ollama_data:
+  chroma_data:

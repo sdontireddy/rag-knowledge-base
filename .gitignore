@@ -1,0 +1,15 @@
+# Local environment
+.env
+.venv/
+
+# Python cache/artifacts
+__pycache__/
+*.pyc
+
+# Runtime data
+chroma_data/
+ollama_data/
+
+# Logs
+*.log
+logs/

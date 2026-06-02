@@ -1,0 +1,21 @@
+{
+  "started_at": "2026-05-29T03:37:06.979144+00:00",
+  "completed_at": "2026-05-29T03:37:55.288256+00:00",
+  "incremental_baseline_at": "2026-05-21T20:59:12.586876+00:00",
+  "total_files_discovered": 92,
+  "total_files_ingested": 17,
+  "total_chunks_created": 121,
+  "total_embeddings_stored": 121,
+  "skipped_duplicates": 0,
+  "skipped_unchanged": 74,
+  "errors": [
+    {
+      "file_path": "/app/knowledge_base/Interviews/Intereview Prep/Physcial AI.md",
+      "error_message": "Embedding request failed after retries"
+    }
+  ],
+  "domains_covered": [
+    "Interviews",
+    "MAWM"
+  ]
+}
