@@ -24,6 +24,8 @@ RAG UI with citation results:
 
 ## Quick Start
 
+**Pre-requisite**
+
 - Docker Desktop (Compose V2)
 - Bash on macOS or Linux, or PowerShell on Windows
 
@@ -62,32 +64,42 @@ For a one-command flow, use `start-local` from Quick Start.
 
 Start only the stack services (`ollama`, `chromadb`, `api`, `ui`):
 
-```bash
-bash scripts/start-stack.sh
-```
+Windows (PowerShell):
 
 ```powershell
 .\scripts\start-stack.ps1
 ```
 
-Run ingestion manually:
+macOS/Linux (Bash):
 
 ```bash
-bash scripts/run-ingestion.sh
+bash scripts/start-stack.sh
 ```
+
+Run ingestion manually:
+
+Windows (PowerShell):
 
 ```powershell
 docker compose run --rm --build ingestion
 ```
 
-Default model configuration (from `.env`):
+macOS/Linux (Bash):
+
+```bash
+bash scripts/run-ingestion.sh
+```
+
+Default model configuration (from `.env.example`):
 
 - `LLM_MODEL=tinyllama:latest`
 - `EMBEDDING_MODEL=nomic-embed-text`
 
 ## Configuration
 
-- `.env` is auto-created from `.env.example` on first run.
+- Use `.env.example` as the reference template (source of truth for config keys/defaults).
+- `.env` is your local/internal runtime copy and may vary by machine.
+- On first run, scripts auto-create `.env` from `.env.example`.
 - If you want to customize values first, copy and edit manually:
 
 ```bash
@@ -100,17 +112,32 @@ cp .env.example .env
 CHROMADB_IMAGE_TAG=0.5.5
 ```
 
-Content source folders:
+#### Content source folders:
 
-- Add markdown files under `knowledge_base/AWS` and `knowledge_base/AI`.
-- You can configure domains with `SOURCE_DIRS` in `.env`.
+- Configure domains with `SOURCE_DIRS` in `.env.example`, then copy values to your local `.env`.
+- `HOST_KNOWLEDGE_BASE_ROOT` is the host root folder where those domain folders live.
+
+Example with additional folders:
+
+```env
+HOST_KNOWLEDGE_BASE_ROOT=../../MyNotes
+SOURCE_DIRS=AI,AWS,Interviews,MAWM,MyDocuments
+```
+
+With the example above, the ingestion script expects markdown files under:
+
+- `../../MyNotes/AI`
+- `../../MyNotes/AWS`
+- `../../MyNotes/Interviews`
+- `../../MyNotes/MAWM`
+- `../../MyNotes/MyDocuments`
 
 ## Ingestion Behavior
 
 - `ingestion` is a one-shot pipeline container.
 - Output report is written to `reports/ingestion_report.json` by default.
 - Incremental mode skips unchanged files based on the previous report timestamp.
-- Set `INGESTION_MIN_FILE_DELTA_SECONDS` in `.env` to add a re-ingestion buffer for recently modified files.
+- Set `INGESTION_MIN_FILE_DELTA_SECONDS` in `.env.example` (and your local `.env`) to add a re-ingestion buffer for recently modified files.
 - Re-ingestion removes old vectors for a source file before writing fresh chunks.
 
 ## Verify Services
@@ -186,10 +213,3 @@ docker compose down -v
 - API ingest endpoints are not exposed yet; ingestion is currently executed via `docker compose run --rm ingestion`.
 - Memory constraints forced us to use tinyllama:latest
 - Increased timeout, with proper error messaging
-
-## Current State
-
-- Recommended for engineers and learners: Yes
-- Recommended for non-technical users: Not yet
-- Recommended as production-ready: No
-- Recommended as portfolio project: Yes
