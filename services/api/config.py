@@ -7,7 +7,7 @@ class Settings(BaseSettings):
     """Environment-backed API configuration."""
 
     ollama_base_url: str = "http://localhost:11434"
-    llm_model: str = "llama3:8b"
+    llm_model: str = "tinyllama:latest"
     embedding_model: str = "nomic-embed-text"
 
     chroma_host: str = "localhost"

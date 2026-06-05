@@ -20,7 +20,7 @@ class FakeClient:
 def test_answer_generator_returns_valid_cited_answer() -> None:
     generator = AnswerGenerator(
         ollama_base_url="http://localhost:11434",
-        model="llama3:8b",
+        model="tinyllama:latest",
         client=FakeClient("ANSWER:\nEnable access in the console [c1]\nCITATIONS:\nc1"),
     )
 
@@ -47,7 +47,7 @@ def test_answer_generator_returns_valid_cited_answer() -> None:
 def test_answer_generator_rejects_uncited_output() -> None:
     generator = AnswerGenerator(
         ollama_base_url="http://localhost:11434",
-        model="llama3:8b",
+        model="tinyllama:latest",
         client=FakeClient("ANSWER:\nEnable access in the console\nCITATIONS:\nc1"),
     )
 
@@ -71,7 +71,7 @@ def test_answer_generator_rejects_uncited_output() -> None:
 
 
 def test_answer_generator_returns_insufficient_context_when_no_chunks() -> None:
-    generator = AnswerGenerator(ollama_base_url="http://localhost:11434", model="llama3:8b")
+    generator = AnswerGenerator(ollama_base_url="http://localhost:11434", model="tinyllama:latest")
 
     result = generator.generate(query="What is the rollback plan?", context_chunks=[])
 
@@ -83,7 +83,7 @@ def test_answer_generator_returns_insufficient_context_when_no_chunks() -> None:
 def test_answer_generator_rejects_when_any_sentence_lacks_citation() -> None:
     generator = AnswerGenerator(
         ollama_base_url="http://localhost:11434",
-        model="llama3:8b",
+        model="tinyllama:latest",
         client=FakeClient("ANSWER:\nEnable access [c1]. Then run validation.\nCITATIONS:\nc1"),
     )
 
@@ -109,7 +109,7 @@ def test_answer_generator_rejects_when_any_sentence_lacks_citation() -> None:
 def test_answer_generator_returns_insufficient_context_for_unrelated_query() -> None:
     generator = AnswerGenerator(
         ollama_base_url="http://localhost:11434",
-        model="llama3:8b",
+        model="tinyllama:latest",
         client=FakeClient("ANSWER:\nGeneral answer with no citations\nCITATIONS:\nNONE"),
     )
 

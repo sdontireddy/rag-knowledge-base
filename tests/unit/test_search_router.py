@@ -27,7 +27,7 @@ class FakeAnswerGenerator:
             "answer_text": "Use model access [c1]",
             "citations": [context_chunks[0]],
             "context_chunks": context_chunks,
-            "model": "llama3:8b",
+            "model": "tinyllama:latest",
             "generation_time_ms": 12,
         }
 
@@ -78,7 +78,7 @@ def test_post_answer_returns_grounded_answer_with_citations() -> None:
     payload = response.json()
     assert payload["query"] == "bedrock"
     assert payload["answer_text"] == "Use model access [c1]"
-    assert payload["model"] == "llama3:8b"
+    assert payload["model"] == "tinyllama:latest"
     assert payload["generation_time_ms"] == 12
     assert len(payload["citations"]) == 1
     assert payload["citations"][0]["chunk_id"] == "c1"

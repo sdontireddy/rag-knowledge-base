@@ -181,7 +181,7 @@ Retrieves relevant chunks and generates an answer with citations.
       "relevance_score": 0.92
     }
   ],
-  "model": "llama3.1:8b",
+  "model": "tinyllama:latest",
   "generation_time_ms": 1320
 }
 ```

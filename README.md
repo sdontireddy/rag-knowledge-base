@@ -239,7 +239,7 @@ docker compose down -v
   - Deploy this in a PROD like machine and benchmark
 - No specific Guardrails yet
 - Check if we can need to tweek the config for Ollama - DONE
-  - **RCA** : generation fails because llama3:8b needs more RAM than available to Ollama in Docker , so switched to tinyllama:latest
+  - **RCA** : generation failed with larger models because available Docker memory was low, so switched to tinyllama:latest
 - Play with Tokens size , retreived Chunks
 - Code Review and Statistical analysis
 
