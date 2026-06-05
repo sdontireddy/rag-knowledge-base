@@ -2,10 +2,10 @@
 
 This is a local Docker-based RAG stack for indexing markdown notes and searching them semantically. It uses Ollama, ChromaDB, FastAPI, and Streamlit to show the full flow end-to-end: ingestion, embeddings, vector search, retrieval, grounded answer generation, and citations.
 
-This project is useful for:
-
-This project is for engineers who want to understand a local RAG stack end-to-end using Docker, Ollama, ChromaDB, FastAPI, and Streamlit.
+This project is for engineers who want to understand a local RAG stack end-to-end.
 It is not intended as a production-ready enterprise RAG platform.
+
+## Who This Is For
 
 - Developers learning local RAG architecture
 - Engineers who want a Docker + Ollama + ChromaDB reference implementation
@@ -24,13 +24,30 @@ RAG UI with citation results:
 
 ## Quick Start
 
-```bash
-bash scripts/start-local.sh
-bash scripts/run-ingestion.sh
+- Docker Desktop (Compose V2)
+- Bash on macOS or Linux, or PowerShell on Windows
+
+Windows (PowerShell, no Bash required):
+
+```powershell
+.\scripts\start-local.ps1
 ```
 
-- Run ingestion at least once before expecting results in search/answer/UI.
+macOS/Linux (Bash):
+
+```bash
+bash scripts/start-local.sh
+```
+
+What `start-local` runs under the hood (both Windows and macOS/Linux):
+
+- Starts stack services: `ollama`, `chromadb`, `api`, and `ui`
+- Waits for Ollama readiness and ensures required models are available
+- Runs one-shot `ingestion` to index markdown content into ChromaDB
+- Writes/updates ingestion report (default: `reports/ingestion_report.json`)
 - First run can take longer because Docker images and Ollama models are downloaded.
+
+Run ingestion at least once before expecting results in search/answer/UI.
 
 ## Access URLs
 
@@ -38,134 +55,65 @@ bash scripts/run-ingestion.sh
 - ChromaDB heartbeat: `http://localhost:8000/api/v1/heartbeat`
 - Ollama endpoint: `http://localhost:11434/`
 
-## Startup Command
+## Advanced Startup (Manual Controls)
 
-Use a single command to start the stack:
+Use this section when you want to control stack startup and ingestion separately.
+For a one-command flow, use `start-local` from Quick Start.
+
+Start only the stack services (`ollama`, `chromadb`, `api`, `ui`):
 
 ```bash
-bash scripts/start-local.sh
+bash scripts/start-stack.sh
 ```
-
-On Windows, you can start the same flow with built-in PowerShell:
 
 ```powershell
 .\scripts\start-stack.ps1
 ```
 
-What the script does:
-
-- Starts `ollama` and `chromadb`
-- Waits for Ollama to become ready
-- Creates `.env` from `.env.example` if it does not exist
-- Pulls the configured Ollama models if they are missing
-- Starts `api` and `ui`
-
-Default models:
-
-- `LLM_MODEL=tinyllama:latest`
-- `EMBEDDING_MODEL=nomic-embed-text`
-
-If `./scripts/start-stack.sh` is not executable in your shell, run:
-
-```bash
-bash ./scripts/start-stack.sh
-```
-
-## What Runs
-
-- `ollama` on port `11434`
-- `chromadb` on port `8000` (pinned Docker image tag)
-- `api` on port `8080`
-- `ui` on port `8501`
-- `ingestion` (one-shot pipeline container)
-
-## Prerequisites
-
-- Docker Desktop (Compose V2)
-- Bash on macOS or Linux, or PowerShell on Windows
-
-## 1. Open Project
-
-```bash
-cd /c/Repo/sdontireddy/Projects/rag-knowledge-base
-```
-
-## 2. Optional: Customize Environment Settings
-
-The startup script auto-creates `.env` from `.env.example` on first run. If you want to customize settings before startup, create `.env` manually and edit it.
-
-```bash
-cp .env.example .env
-```
-
-Example override in `.env`:
-
-```bash
-CHROMADB_IMAGE_TAG=0.5.5
-```
-
-## 3. Add Documents for Ingestion
-
-Put markdown files under:
-
-- `knowledge_base/AWS`
-- `knowledge_base/AI`
-
-You can change domain folders with `SOURCE_DIRS` in `.env`.
-
-## 4. Start the Stack
-
-```bash
-./scripts/start-stack.sh
-```
-
-The startup script handles `.env` bootstrap, base services, readiness checks, model pull, and app startup. On Windows, use PowerShell:
-
-```powershell
-.\scripts\start-stack.ps1
-```
-
-If you are on macOS or Linux and your shell does not execute `./scripts/start-stack.sh` directly, use:
-
-```bash
-bash ./scripts/start-stack.sh
-```
-
-First-run timing note:
-
-- The first startup can take significantly longer because Docker may need to pull base images and Ollama may need to download models.
-- Later startups are much faster because images and models are cached locally.
-
-Optional: view logs
-
-```bash
-docker compose logs -f api
-```
-
-## 5. Run Ingestion
-
-This is the first task you must run to get search or answer results.
-
-- Until ingestion completes at least once, `/api/search`, `/api/answer`, and the UI will not have indexed knowledge to return meaningful results.
-
-Run the ingestion pipeline as a one-shot container:
+Run ingestion manually:
 
 ```bash
 bash scripts/run-ingestion.sh
 ```
 
-Expected output includes report file write to:
+```powershell
+docker compose run --rm --build ingestion
+```
 
-- `reports/ingestion_report.json` on the host (configurable via `HOST_INGESTION_REPORT_PATH`)
+Default model configuration (from `.env`):
 
-Incremental behavior:
+- `LLM_MODEL=tinyllama:latest`
+- `EMBEDDING_MODEL=nomic-embed-text`
 
-- The first run ingests all discovered markdown files.
-- Later runs read the previous ingestion report timestamp and skip files whose modified time is not newer than that baseline.
-- Set `INGESTION_MIN_FILE_DELTA_SECONDS` in `.env` if you want a buffer before a recently modified file is considered eligible for re-ingestion.
-- When a file is re-ingested, existing vectors for that source file are removed first so stale chunks do not accumulate.
+## Configuration
 
-## 6. Verify Services
+- `.env` is auto-created from `.env.example` on first run.
+- If you want to customize values first, copy and edit manually:
+
+```bash
+cp .env.example .env
+```
+
+- Example override:
+
+```bash
+CHROMADB_IMAGE_TAG=0.5.5
+```
+
+Content source folders:
+
+- Add markdown files under `knowledge_base/AWS` and `knowledge_base/AI`.
+- You can configure domains with `SOURCE_DIRS` in `.env`.
+
+## Ingestion Behavior
+
+- `ingestion` is a one-shot pipeline container.
+- Output report is written to `reports/ingestion_report.json` by default.
+- Incremental mode skips unchanged files based on the previous report timestamp.
+- Set `INGESTION_MIN_FILE_DELTA_SECONDS` in `.env` to add a re-ingestion buffer for recently modified files.
+- Re-ingestion removes old vectors for a source file before writing fresh chunks.
+
+## Verify Services
 
 API Reference:
 
@@ -214,13 +162,13 @@ UI:
 
 - Open `http://localhost:8501` to ask grounded questions and inspect citations.
 
-## 7. Run Tests
+## Run Tests
 
 ```bash
 /c/Repo/sdontireddy/MyNotes/.venv/Scripts/python -m pytest tests/unit tests/integration/test_ingestion_pipeline.py -q
 ```
 
-## 8. Stop Stack
+## Stop Stack
 
 ```bash
 docker compose down
@@ -239,46 +187,9 @@ docker compose down -v
 - Memory constraints forced us to use tinyllama:latest
 - Increased timeout, with proper error messaging
 
-## TODO
+## Current State
 
-### Infra Improvements
-
-1.  Create Startup Script - DONE
-2.  Update Docker Compose - DONE
-    - Check the Ollama volume if exists or not
-3.  Prerequisite tests to make sure all the required models are available and heartbeats are accessible - DONE
-
-#### Embeddings
-
-- Currently only markdown file support
-- Future
-  - Image
-  - PDF
-  - Q: To keep apps modular, can we have separate PDF-RAG-KNOWLEDGE-BASE and IMAGE-RAG-KNOWLEDGE-BASE tools?
-
-##### Optimizations
-
-- How to improve the ranking for relvant information
-- How to improve the ranking for relevant information
-  - Currently search results are OK , we need to make them better
-  - Structure the knowledge base
-    - Markdown explore a better template / tagging/ metadata
-- Currently on local setup , so latencies very high
-  - Deploy this in a PROD like machine and benchmark
-- No specific Guardrails yet
-- Check if we need to tweak the config for Ollama - DONE
-  - **RCA** : generation failed with larger models because available Docker memory was low, so switched to tinyllama:latest
-- Play with token size, retrieved chunks
-- Code Review and Statistical analysis
-
-#### Documentations
-
-- Swagger for API - DONE
-- Update Tradeoffs and create a brain map
-
-### Current state:
-
-Recommend to engineers / learners: Yes
-Recommend to non-technical users: Not yet
-Recommend as production-ready: No
-Recommend as portfolio project: Absolutely yes
+- Recommended for engineers and learners: Yes
+- Recommended for non-technical users: Not yet
+- Recommended as production-ready: No
+- Recommended as portfolio project: Yes
