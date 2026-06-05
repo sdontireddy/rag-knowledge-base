@@ -13,10 +13,7 @@ This project is useful for:
 
 ## Demo
 
-<video src="docs/images/ScreenCapture.webm" controls muted playsinline width="100%">
-  Your browser does not support embedded video. You can download it from
-  <a href="docs/images/ScreenCapture.webm">docs/images/ScreenCapture.webm</a>.
-</video>
+![RAG Knowledge Base demo](docs/images/ScreenCapture.gif)
 
 ## Startup Command
 
