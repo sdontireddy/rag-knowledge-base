@@ -6,6 +6,39 @@ PROJECT_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 
 cd "${PROJECT_ROOT}"
 
+require_command() {
+  local command_name="$1"
+
+  if ! command -v "$command_name" >/dev/null 2>&1; then
+    echo "Missing required command: $command_name"
+    exit 1
+  fi
+}
+
+require_command docker
+
+if ! docker compose version >/dev/null 2>&1; then
+  echo "Docker Compose V2 is required and was not found."
+  exit 1
+fi
+
+if [[ ! -f .env ]]; then
+  if [[ ! -f .env.example ]]; then
+    echo "Missing .env.example, cannot bootstrap configuration."
+    exit 1
+  fi
+
+  cp .env.example .env
+  echo "Created .env from .env.example"
+fi
+
+set -a
+source .env
+set +a
+
+LLM_MODEL="${LLM_MODEL:-tinyllama:latest}"
+EMBEDDING_MODEL="${EMBEDDING_MODEL:-nomic-embed-text}"
+
 echo "Starting base services (ollama + chromadb)..."
 docker compose up -d ollama chromadb
 
@@ -39,8 +72,8 @@ ensure_model() {
   fi
 }
 
-ensure_model "llama3.1:8b"
-ensure_model "nomic-embed-text"
+ensure_model "$LLM_MODEL"
+ensure_model "$EMBEDDING_MODEL"
 
 echo "Starting app services (api + ui)..."
 docker compose up -d api ui
