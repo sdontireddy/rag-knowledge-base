@@ -4,6 +4,9 @@ This is a local Docker-based RAG stack for indexing markdown notes and searching
 
 This project is useful for:
 
+This project is for engineers who want to understand a local RAG stack end-to-end using Docker, Ollama, ChromaDB, FastAPI, and Streamlit.
+It is not intended as a production-ready enterprise RAG platform.
+
 - Developers learning local RAG architecture
 - Engineers who want a Docker + Ollama + ChromaDB reference implementation
 - People who want to understand the full flow instead of using a black-box tool
