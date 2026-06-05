@@ -15,12 +15,32 @@ This project is useful for:
 
 ![RAG Knowledge Base demo](docs/images/ScreenCapture.gif)
 
+RAG UI with citation results:
+
+![RAG UI with citation results](docs/images/RAG.png)
+
+## Quick Start
+
+```bash
+bash scripts/start-local.sh
+bash scripts/run-ingestion.sh
+```
+
+- Run ingestion at least once before expecting results in search/answer/UI.
+- First run can take longer because Docker images and Ollama models are downloaded.
+
+## Access URLs
+
+- RAG UI (Streamlit): `http://localhost:8501/`
+- ChromaDB heartbeat: `http://localhost:8000/api/v1/heartbeat`
+- Ollama endpoint: `http://localhost:11434/`
+
 ## Startup Command
 
 Use a single command to start the stack:
 
 ```bash
-./scripts/start-stack.sh
+bash scripts/start-local.sh
 ```
 
 On Windows, you can start the same flow with built-in PowerShell:
@@ -149,6 +169,10 @@ API Reference:
 - Swagger-style document: `docs/api-swagger-style.md`
 - Live OpenAPI docs: `http://localhost:8080/docs`
 
+Swagger UI:
+
+![Swagger UI](docs/images/swagger.png)
+
 Health:
 
 ```bash
@@ -209,8 +233,8 @@ docker compose down -v
 
 - ChromaDB runs as a Docker service (`chromadb`), not as a local host process.
 - API ingest endpoints are not exposed yet; ingestion is currently executed via `docker compose run --rm ingestion`.
-- Memory constrains forced us to use tinyllama:latest
-- Increased TimeOut , also proper error messaging
+- Memory constraints forced us to use tinyllama:latest
+- Increased timeout, with proper error messaging
 
 ## TODO
 
@@ -219,28 +243,29 @@ docker compose down -v
 1.  Create Startup Script - DONE
 2.  Update Docker Compose - DONE
     - Check the Ollama volume if exists or not
-3.  Pre-requisite tests to make sure all the require models are available and HEARTBEATS are accesible - DONE
+3.  Prerequisite tests to make sure all the required models are available and heartbeats are accessible - DONE
 
 #### Embeddings
 
-- Curently only markdown file support
+- Currently only markdown file support
 - Future
   - Image
   - PDF
-  - Q: To keep apps modular , Can we have seprate PDF PDF-RAG-KNOWLDGE-BASE tool and IMAGE-RAG-KNOWLDGE-BASE etc
+  - Q: To keep apps modular, can we have separate PDF-RAG-KNOWLEDGE-BASE and IMAGE-RAG-KNOWLEDGE-BASE tools?
 
 ##### Optimizations
 
 - How to improve the ranking for relvant information
+- How to improve the ranking for relevant information
   - Currently search results are OK , we need to make them better
   - Structure the knowledge base
     - Markdown explore a better template / tagging/ metadata
 - Currently on local setup , so latencies very high
   - Deploy this in a PROD like machine and benchmark
 - No specific Guardrails yet
-- Check if we can need to tweek the config for Ollama - DONE
+- Check if we need to tweak the config for Ollama - DONE
   - **RCA** : generation failed with larger models because available Docker memory was low, so switched to tinyllama:latest
-- Play with Tokens size , retreived Chunks
+- Play with token size, retrieved chunks
 - Code Review and Statistical analysis
 
 #### Documentations
