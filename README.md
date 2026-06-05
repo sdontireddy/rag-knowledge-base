@@ -11,6 +11,13 @@ This project is useful for:
 - Engineers preparing for AI, agent, or RAG architecture interviews
 - Teams evaluating local RAG before moving to Bedrock, Azure AI Search, Vertex AI, or similar platforms
 
+## Demo
+
+<video src="docs/images/ScreenCapture.webm" controls muted playsinline width="100%">
+  Your browser does not support embedded video. You can download it from
+  <a href="docs/images/ScreenCapture.webm">docs/images/ScreenCapture.webm</a>.
+</video>
+
 ## Startup Command
 
 Use a single command to start the stack:
@@ -82,9 +89,7 @@ CHROMADB_IMAGE_TAG=0.5.5
 Put markdown files under:
 
 - `knowledge_base/AWS`
-- `knowledge_base/LULU`
-- `knowledge_base/Techno`
-- `knowledge_base/MAWM`
+- `knowledge_base/AI`
 
 You can change domain folders with `SOURCE_DIRS` in `.env`.
 
@@ -106,6 +111,11 @@ If you are on macOS or Linux and your shell does not execute `./scripts/start-st
 bash ./scripts/start-stack.sh
 ```
 
+First-run timing note:
+
+- The first startup can take significantly longer because Docker may need to pull base images and Ollama may need to download models.
+- Later startups are much faster because images and models are cached locally.
+
 Optional: view logs
 
 ```bash
@@ -113,6 +123,10 @@ docker compose logs -f api
 ```
 
 ## 5. Run Ingestion
+
+This is the first task you must run to get search or answer results.
+
+- Until ingestion completes at least once, `/api/search`, `/api/answer`, and the UI will not have indexed knowledge to return meaningful results.
 
 Run the ingestion pipeline as a one-shot container:
 
