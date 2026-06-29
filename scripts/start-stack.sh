@@ -75,8 +75,8 @@ ensure_model() {
 ensure_model "$LLM_MODEL"
 ensure_model "$EMBEDDING_MODEL"
 
-echo "Starting app services (api + ui)..."
-docker compose up -d api ui
+echo "Starting app services (api + wrapper-api + ui)..."
+docker compose up -d api wrapper-api ui
 
 echo "Stack is up."
 docker compose ps

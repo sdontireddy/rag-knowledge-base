@@ -1,0 +1,14 @@
+FROM python:3.11-slim
+
+WORKDIR /app
+
+COPY services/ui/requirements.txt /app/requirements.txt
+RUN pip install --no-cache-dir -r /app/requirements.txt
+
+# Copy package structure
+COPY services/__init__.py /app/services/__init__.py
+COPY services/ui /app/services/ui
+
+ENV PYTHONPATH=/app
+
+CMD ["uvicorn", "services.ui.wrapper_api:app", "--host", "0.0.0.0", "--port", "8090"]

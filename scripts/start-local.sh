@@ -3,7 +3,7 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-echo "Starting local stack (ollama + chromadb + api + ui)..."
+echo "Starting local stack (ollama + chromadb + api + wrapper-api + ui)..."
 bash "${SCRIPT_DIR}/start-stack.sh"
 
 echo "Running initial ingestion..."

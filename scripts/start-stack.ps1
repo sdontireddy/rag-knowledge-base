@@ -131,8 +131,8 @@ for ($attempt = 1; $attempt -le 60; $attempt++) {
 Ensure-Model -Model $llmModel
 Ensure-Model -Model $embeddingModel
 
-Write-Host 'Starting app services (api + ui)...'
-docker compose up -d api ui
+Write-Host 'Starting app services (api + wrapper-api + ui)...'
+docker compose up -d api wrapper-api ui
 
 Write-Host 'Stack is up.'
 docker compose ps
