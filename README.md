@@ -43,7 +43,7 @@ bash scripts/start-local.sh
 
 What `start-local` runs under the hood (both Windows and macOS/Linux):
 
-- Starts stack services: `ollama`, `chromadb`, `api`, and `ui`
+- Starts stack services: `ollama`, `chromadb`, `api`, `wrapper-api`, and `ui`
 - Waits for Ollama readiness and ensures required models are available
 - Runs one-shot `ingestion` to index markdown content into ChromaDB
 - Writes/updates ingestion report (default: `reports/ingestion_report.json`)
@@ -54,8 +54,37 @@ Run ingestion at least once before expecting results in search/answer/UI.
 ## Access URLs
 
 - RAG UI (Streamlit): `http://localhost:8501/`
+- Wrapper API (FastAPI): `http://localhost:8090/`
+- Wrapper OpenAPI docs: `http://localhost:8090/docs`
+- Core API (FastAPI): `http://localhost:8080/`
 - ChromaDB heartbeat: `http://localhost:8000/api/v1/heartbeat`
 - Ollama endpoint: `http://localhost:11434/`
+
+## Wrapper API (Shared Local Client Surface)
+
+The wrapper API provides a simple local contract for both UI and external agents.
+
+- `POST /ask` for grounded answer generation
+- `GET /health` for wrapper and upstream health status
+- `GET /domains` for available domain names
+
+Current internal flow:
+
+- `ui -> wrapper-api -> core api -> chromadb + ollama`
+
+Sample wrapper health check:
+
+```bash
+curl http://localhost:8090/health
+```
+
+Sample wrapper ask request:
+
+```bash
+curl -X POST http://localhost:8090/ask \
+  -H "Content-Type: application/json" \
+  -d '{"query":"How do I enable Bedrock?","k":5,"domain_filter":["AWS"],"max_tokens":512}'
+```
 
 ## Advanced Startup (Manual Controls)
 
@@ -147,6 +176,10 @@ API Reference:
 - Swagger-style document: `docs/api-swagger-style.md`
 - Live OpenAPI docs: `http://localhost:8080/docs`
 
+Wrapper API docs:
+
+- Live OpenAPI docs: `http://localhost:8090/docs`
+
 Swagger UI:
 
 ![Swagger UI](docs/images/swagger.png)
@@ -155,6 +188,12 @@ Health:
 
 ```bash
 curl http://localhost:8080/api/health
+```
+
+Wrapper health:
+
+```bash
+curl http://localhost:8090/health
 ```
 
 Domains:
@@ -175,6 +214,14 @@ Answer generation:
 
 ```bash
 curl -X POST http://localhost:8080/api/answer \
+  -H "Content-Type: application/json" \
+  -d '{"query":"How do I enable Bedrock?","k":5,"domain_filter":["AWS"],"max_tokens":512}'
+```
+
+Wrapper ask (recommended for local clients/agents):
+
+```bash
+curl -X POST http://localhost:8090/ask \
   -H "Content-Type: application/json" \
   -d '{"query":"How do I enable Bedrock?","k":5,"domain_filter":["AWS"],"max_tokens":512}'
 ```

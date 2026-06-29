@@ -5,12 +5,21 @@ from __future__ import annotations
 import os
 import re
 
-import httpx
 import streamlit as st
+
+from services.ui.local_rag_client import LocalRagApiError, LocalRagClient
 
 
 API_BASE_URL = os.getenv("API_BASE_URL", "http://api:8080").rstrip("/")
 UI_ANSWER_TIMEOUT_SECONDS = float(os.getenv("UI_ANSWER_TIMEOUT_SECONDS", "90"))
+
+
+@st.cache_resource
+def _rag_client() -> LocalRagClient:
+	return LocalRagClient(
+		base_url=API_BASE_URL,
+		answer_timeout_seconds=UI_ANSWER_TIMEOUT_SECONDS,
+	)
 
 
 def _format_answer_markdown(answer_text: str) -> str:
@@ -75,28 +84,18 @@ def _classify_segment(text: str) -> str:
 
 def _get_domains() -> list[str]:
 	try:
-		response = httpx.get(f"{API_BASE_URL}/api/domains", timeout=5.0)
-		response.raise_for_status()
-	except httpx.HTTPError:
+		return _rag_client().domains()
+	except LocalRagApiError:
 		return []
-
-	payload = response.json()
-	return [str(item.get("name", "")) for item in payload.get("domains", []) if item.get("name")]
 
 
 def _answer_question(query: str, domain_filter: list[str], k: int, max_tokens: int) -> dict:
-	response = httpx.post(
-		f"{API_BASE_URL}/api/answer",
-		json={
-			"query": query,
-			"domain_filter": domain_filter or None,
-			"k": k,
-			"max_tokens": max_tokens,
-		},
-		timeout=httpx.Timeout(timeout=UI_ANSWER_TIMEOUT_SECONDS, connect=5.0),
+	return _rag_client().ask(
+		query=query,
+		domain_filter=domain_filter,
+		k=k,
+		max_tokens=max_tokens,
 	)
-	response.raise_for_status()
-	return response.json()
 
 
 st.set_page_config(page_title="RAG Knowledge Base", layout="wide")
@@ -118,7 +117,7 @@ if submitted:
 	else:
 		try:
 			payload = _answer_question(query=query.strip(), domain_filter=selected_domains, k=k, max_tokens=max_tokens)
-		except httpx.HTTPError as exc:
+		except LocalRagApiError as exc:
 			st.error(f"Answer request failed: {exc}")
 		else:
 			st.subheader("Answer")

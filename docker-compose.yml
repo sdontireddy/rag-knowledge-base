@@ -46,7 +46,7 @@ services:
       MAX_CHUNK_TOKENS: ${MAX_CHUNK_TOKENS}
       MIN_CHUNK_TOKENS: ${MIN_CHUNK_TOKENS}
     volumes:
-      - ./knowledge_base:/app/knowledge_base:ro
+      - ../../MyNotes:/app/knowledge_base:ro
     depends_on:
       ollama:
         condition: service_healthy
@@ -79,6 +79,19 @@ services:
       chromadb:
         condition: service_healthy
 
+  wrapper-api:
+    build:
+      context: .
+      dockerfile: services/ui/Dockerfile.wrapper
+    ports:
+      - "8090:8090"
+    environment:
+      API_BASE_URL: http://api:8080
+      UI_ANSWER_TIMEOUT_SECONDS: ${UI_ANSWER_TIMEOUT_SECONDS:-90}
+    depends_on:
+      api:
+        condition: service_started
+
   ui:
     build:
       context: .
@@ -86,9 +99,9 @@ services:
     ports:
       - "8501:8501"
     environment:
-      API_BASE_URL: ${API_BASE_URL}
+      API_BASE_URL: http://wrapper-api:8090
     depends_on:
-      api:
+      wrapper-api:
         condition: service_started
 
 volumes:
