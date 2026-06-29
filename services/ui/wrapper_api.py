@@ -68,6 +68,10 @@ def domains() -> dict:
     "/ask",
     responses={502: {"description": "Upstream RAG API request failed"}},
 )
+@app.post(
+    "/api/answer",
+    responses={502: {"description": "Upstream RAG API request failed"}},
+)
 def ask(payload: AskRequest) -> dict:
     try:
         return rag_client.ask(
